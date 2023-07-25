@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(reports_blueprint, url_prefix='/reports')
-app.secret_key = os.environ['FLASK_SECRET_KEY']
+app.secret_key = os.environ['WA_REPORTING_FLASK_SECRET_KEY']
 
 if __name__ == "__main__":
     app.debug = True

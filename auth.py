@@ -12,8 +12,8 @@ auth_blueprint = Blueprint('auth', __name__)
 
 # Wild Apricot credentials, secrets are in environment variables
 WILD_APRICOT_CLIENT_ID = "jz0nsf5dl4"
-WILD_APRICOT_CLIENT_SECRET = os.environ['WILD_APRICOT_CLIENT_SECRET']
-WILD_APRICOT_API_KEY = os.environ['WILD_APRICOT_API_KEY']
+WILD_APRICOT_CLIENT_SECRET = os.environ['WA_REPORTING_CLIENT_SECRET']
+WILD_APRICOT_API_KEY = os.environ['WA_REPORTING_API_KEY']
 '''
 note that WA_REPORTING_DOMAIN must:
 1. Support HTTPS
