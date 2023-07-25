@@ -1,7 +1,7 @@
 from flask import Blueprint, session, request, redirect, url_for
 import requests
 from requests_oauthlib import OAuth2Session
-from reports import reports_blueprint
+from requests.auth import HTTPBasicAuth
 import os
 import logging
 import base64
@@ -14,7 +14,17 @@ auth_blueprint = Blueprint('auth', __name__)
 WILD_APRICOT_CLIENT_ID = "jz0nsf5dl4"
 WILD_APRICOT_CLIENT_SECRET = os.environ['WILD_APRICOT_CLIENT_SECRET']
 WILD_APRICOT_API_KEY = os.environ['WILD_APRICOT_API_KEY']
-WILD_APRICOT_REDIRECT_URI = "https://better-ram-properly.ngrok-free.app/callback"
+'''
+note that WA_REPORTING_DOMAIN must:
+1. Support HTTPS
+2. Be listed as a trusted redirect domain in the WA settings for this 
+authorized application. Without this, the oauth signin page will just
+say "an error occurred" and not give any details.
+
+Use ngrok for local development, but be aware of condition 2 above. Use
+your free static domain name.
+'''
+WILD_APRICOT_REDIRECT_URI = f"https://{os.environ['WA_REPORTING_DOMAIN']}/callback"
 
 @auth_blueprint.route("/")
 def index():
@@ -49,30 +59,21 @@ def callback():
         # Store the token in the session
         session['user_token'] = token
         logger.debug(f"User token stored in session.")
+        set_api_token()
+        return redirect(url_for('reports.index'))
     else:
         logger.warn(f"User token not received. Login error?")
+        return "User login token not received. Please try again."
 
+def set_api_token():
     # The URL for API tokens
     api_token_url = "https://oauth.wildapricot.org/auth/token"
-
-    # Base64 encode the API key
-    auth_str = f"APIKEY:{WILD_APRICOT_API_KEY}"
-    auth_str_encoded = base64.b64encode(auth_str.encode()).decode()
-
-    # The headers for the request
-    headers = {
-        "Authorization": f"Basic {auth_str_encoded}",
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-
-    # The data for the request
     data = {
         "grant_type": "client_credentials",
         "scope": "auto"
     }
-
     # Send a POST request with Basic Authorization and form data
-    response = requests.post(api_token_url, headers=headers, data=data)
+    response = requests.post(api_token_url, auth=HTTPBasicAuth("APIKEY", WILD_APRICOT_API_KEY), data=data)
 
     # Check if the request was successful
     if response.status_code == 200:
@@ -81,9 +82,68 @@ def callback():
         session['api_token'] = api_token
         logger.debug(f"API token stored in session.")
     else:
-        # Handle the error
-        session.pop('user_token', None)
-        api_token = None
+        # Handle the error, force user logout
+        session.clear()        
         return f"Error getting API token, response code was {response.status_code}. Please try again."
 
-    return redirect(url_for('reports.index'))
+@auth_blueprint.route("/logout")
+def logout():
+    session.clear()
+    return "Goodbye!"
+
+def get_oauth_session():
+    # Bearer token
+    token = {
+        'access_token': session['api_token'], 
+        'token_type': 'Bearer'
+    }
+    oauth_session = OAuth2Session(token=token)
+    return oauth_session
+
+def check_report_access():
+    # Use the user token to get the current user's info
+    oauth_user = OAuth2Session(token=session['user_token'])
+    account_id = "335649"
+    response = oauth_user.get(url = f"https://api.wildapricot.org/v2.2/accounts/{account_id}/contacts/me")
+
+    if response.status_code == 200:
+        logger.debug(f"Response from Wild Apricot: {response.json()}")
+
+        # we got it, now use the contact id to get the contact's fields        
+        contact_id = response.json().get('Id')
+        oauth_app = get_oauth_session()
+        
+        logger.debug(f"About to call the API for user's signoffs with contact id {contact_id}...")
+        response = oauth_app.get(url = f"https://api.wildapricot.org/v2.2/accounts/{account_id}/contacts/{contact_id}",
+                                 params = {("&async", "false"), ("&includeFieldValues", "true")})
+        
+        if response.status_code == 200:
+            logger.debug(f"Response from Wild Apricot: {response.json()}")
+            '''
+            see https://app.swaggerhub.com/apis-docs/WildApricot/wild-apricot_api_for_non_administrative_access/7.15.0#/Contacts/get_accounts__accountId__contacts_me
+            need signoff [NL] wautils (will be [NL] reporting), from field name "NL Signoffs and Categories" 
+            see https://github.com/nova-labs/watto/blob/main/app/models/field.rb and
+            https://github.com/nova-labs/watto/blob/main/app/models/user.rb
+            based on what I see in the portal, if a signoff with the right name exists, the user has it.
+            '''
+            # Extract the FieldValues list
+            field_values = response.json().get('FieldValues', [])
+
+            # Find the NL Signoffs and Categories field
+            signoffs_field = next((field for field in field_values if field['FieldName'] == 'NL Signoffs and Categories'), None)
+            # If the field was found and it has a non-empty value, check if [NL] wautils is present
+            if signoffs_field and signoffs_field['Value']:
+                labels = [item['Label'] for item in signoffs_field['Value']]
+                if '[NL] wautils' in labels:
+                    return True
+                else:
+                    return False
+            else:
+                logger.warn("NL Signoffs and Categories field is not present or has an empty value")
+                return False
+
+        else:
+            raise Exception(f"Error getting user signoffs, response code was {response.status_code}.")
+    else:        
+        raise Exception(f"Error getting user info, response code was {response.status_code}.")
+    return False
