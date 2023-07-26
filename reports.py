@@ -40,7 +40,7 @@ def index():
 
 @reports_blueprint.route("/test_report")
 def test_report():    
-    filter_string = "StartDate gt 2023-06-25 AND IsUpcoming eq false AND (substringof('Name', '_S') OR substringof('Name', '_P'))"
+    filter_string = "StartDate gt 2023-07-22 AND IsUpcoming eq false AND (substringof('Name', '_S') OR substringof('Name', '_P'))"
     json_data = wadata.call_api("Events", filter_string)
      
     cancel_list = ['cancelled', 'canceled', 'cancellled', 'cancselled', 'canelled', 'cancel']
@@ -64,11 +64,11 @@ def test_report():
         missing_instructors = [entry['DisplayName'] for entry in json_data if 'Instructor' in entry['RegistrationType']['Name'] and entry['IsCheckedIn'] == False]
         if len(missing_instructors) > 0:
             # add the name(s) of the instructor to the event
-            event.append(missing_instructors)
+            event.extend(missing_instructors)
             flawed_events.append(event)
         logger.debug(f"Event registration JSON data: {json.dumps(json_data, indent=4)}")
 
     logger.debug(f"Found {len(flawed_events)} flawed events")
 
-    return render_template("test_report.jinja", event_info=flawed_events)
+    return render_template("test_report.jinja", event_info=flawed_events, datetime=datetime)
     

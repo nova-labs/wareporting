@@ -6,8 +6,13 @@
         <tr>
           <td>{{ event[0] }}</td>
           <td>{{ event[1] }}</td>
-          <td>{{ event[3] }}  {{ event[4] }}</td>
-          <td>{{ event[2] }}</td>
+          <td>
+            {{ event[3] }}  
+            {% if event[4] %}
+              <br>{{ event[4] }}
+            {% endif %}
+          </td>
+          <td>{{ datetime.strptime(event[2], "%Y-%m-%dT%H:%M:%S%z").strftime("%Y-%m-%d %I%p") }}</td>
         </tr>
 {% endfor %}
 </table>
