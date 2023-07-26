@@ -14,6 +14,8 @@ auth_blueprint = Blueprint('auth', __name__)
 WILD_APRICOT_CLIENT_ID = "jz0nsf5dl4"
 WILD_APRICOT_CLIENT_SECRET = os.environ['WA_REPORTING_CLIENT_SECRET']
 WILD_APRICOT_API_KEY = os.environ['WA_REPORTING_API_KEY']
+WA_API_PREFIX = "https://api.wildapricot.org/v2.2/Accounts/335649"
+
 '''
 note that WA_REPORTING_DOMAIN must:
 1. Support HTTPS
@@ -59,13 +61,13 @@ def callback():
         # Store the token in the session
         session['user_token'] = token
         logger.debug(f"User token stored in session.")
-        set_api_token()
+        refresh_token()
         return redirect(url_for('reports.index'))
     else:
         logger.warn(f"User token not received. Login error?")
         return "User login token not received. Please try again."
 
-def set_api_token():
+def refresh_token():
     # The URL for API tokens
     api_token_url = "https://oauth.wildapricot.org/auth/token"
     data = {
@@ -92,6 +94,9 @@ def logout():
     return "Goodbye!"
 
 def get_oauth_session():
+    if 'api_token' not in session:
+        refresh_token()
+
     # Bearer token
     token = {
         'access_token': session['api_token'], 
@@ -102,9 +107,8 @@ def get_oauth_session():
 
 def check_report_access():
     # Use the user token to get the current user's info
-    oauth_user = OAuth2Session(token=session['user_token'])
-    account_id = "335649"
-    response = oauth_user.get(url = f"https://api.wildapricot.org/v2.2/accounts/{account_id}/contacts/me")
+    oauth_user = OAuth2Session(token=session['user_token'])    
+    response = oauth_user.get(url = f"{WA_API_PREFIX}/contacts/me")
 
     if response.status_code == 200:
         logger.debug(f"Response from Wild Apricot: {response.json()}")
@@ -114,7 +118,7 @@ def check_report_access():
         oauth_app = get_oauth_session()
         
         logger.debug(f"About to call the API for user's signoffs with contact id {contact_id}...")
-        response = oauth_app.get(url = f"https://api.wildapricot.org/v2.2/accounts/{account_id}/contacts/{contact_id}",
+        response = oauth_app.get(url = f"{WA_API_PREFIX}/contacts/{contact_id}",
                                  params = {("&async", "false"), ("&includeFieldValues", "true")})
         
         if response.status_code == 200:

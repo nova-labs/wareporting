@@ -1,0 +1,16 @@
+<!doctype html>
+<title>Event List</title>
+{% if event_info %}
+<table border="1">
+{% for event in event_info %}
+        <tr>
+          <td>{{ event[0] }}</td>
+          <td>{{ event[1] }}</td>
+          <td>{{ event[3] }}  {{ event[4] }}</td>
+          <td>{{ event[2] }}</td>
+        </tr>
+{% endfor %}
+</table>
+{% else %}
+  <h1>No matching data found.</h1>
+{% endif %}

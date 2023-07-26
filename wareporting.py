@@ -11,5 +11,7 @@ app.secret_key = os.environ['WA_REPORTING_FLASK_SECRET_KEY']
 
 if __name__ == "__main__":
     app.debug = True
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.WARNING)
+    logging.getLogger('reports').setLevel(logging.DEBUG)
+    #logging.getLogger('wadata').setLevel(logging.DEBUG)
     app.run()
