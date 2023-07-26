@@ -1,21 +1,20 @@
-from flask import Blueprint, session, request, redirect, url_for
+from flask import Blueprint, session, request, redirect, url_for, render_template
 import requests
 from requests_oauthlib import OAuth2Session
 from requests.auth import HTTPBasicAuth
 import os
 import logging
 import base64
+import json
 
 logger = logging.getLogger(__name__)
 
 auth_blueprint = Blueprint('auth', __name__)
 
 # Wild Apricot credentials, secrets are in environment variables
-WILD_APRICOT_CLIENT_ID = "jz0nsf5dl4"
-WILD_APRICOT_CLIENT_SECRET = os.environ['WA_REPORTING_CLIENT_SECRET']
-WILD_APRICOT_API_KEY = os.environ['WA_REPORTING_API_KEY']
+WA_REPORTING_CLIENT_SECRET = os.environ['WA_REPORTING_CLIENT_SECRET']
+WA_REPORTING_API_KEY = os.environ['WA_REPORTING_API_KEY']
 WA_API_PREFIX = "https://api.wildapricot.org/v2.2/Accounts/335649"
-
 '''
 note that WA_REPORTING_DOMAIN must:
 1. Support HTTPS
@@ -26,11 +25,17 @@ say "an error occurred" and not give any details.
 Use ngrok for local development, but be aware of condition 2 above. Use
 your free static domain name.
 '''
-WILD_APRICOT_REDIRECT_URI = f"https://{os.environ['WA_REPORTING_DOMAIN']}/callback"
+WA_REPORTING_DOMAIN = os.environ['WA_REPORTING_DOMAIN']
+
+WILD_APRICOT_CLIENT_ID = "jz0nsf5dl4"
+WILD_APRICOT_REDIRECT_URI = f"https://{WA_REPORTING_DOMAIN}/callback"
 
 @auth_blueprint.route("/")
 def index():
-    return "<p>Hello, this is the auth index</p>"
+    logged_in = False
+    if 'user_token' in session:
+        logged_in = True
+    return render_template("index.jinja", logged_in=logged_in)
 
 @auth_blueprint.route("/login")
 def login():
@@ -51,7 +56,7 @@ def callback():
     wild_apricot = OAuth2Session(WILD_APRICOT_CLIENT_ID, 
                                  redirect_uri=WILD_APRICOT_REDIRECT_URI)
     token = wild_apricot.fetch_token("https://oauth.wildapricot.org/auth/token", 
-                                     client_secret=WILD_APRICOT_CLIENT_SECRET,                                     
+                                     client_secret=WA_REPORTING_CLIENT_SECRET,                                     
                                      code=authorization_code,                                     
                                      scope=["contacts_me"])
     
@@ -75,7 +80,7 @@ def refresh_token():
         "scope": "auto"
     }
     # Send a POST request with Basic Authorization and form data
-    response = requests.post(api_token_url, auth=HTTPBasicAuth("APIKEY", WILD_APRICOT_API_KEY), data=data)
+    response = requests.post(api_token_url, auth=HTTPBasicAuth("APIKEY", WA_REPORTING_API_KEY), data=data)
 
     # Check if the request was successful
     if response.status_code == 200:
@@ -111,7 +116,7 @@ def check_report_access():
     response = oauth_user.get(url = f"{WA_API_PREFIX}/contacts/me")
 
     if response.status_code == 200:
-        logger.debug(f"Response from Wild Apricot: {response.json()}")
+        logger.debug(f"Response from Wild Apricot:\n {json.dumps(response.json(), indent=4)}")
 
         # we got it, now use the contact id to get the contact's fields        
         contact_id = response.json().get('Id')
@@ -122,7 +127,7 @@ def check_report_access():
                                  params = {("&async", "false"), ("&includeFieldValues", "true")})
         
         if response.status_code == 200:
-            logger.debug(f"Response from Wild Apricot: {response.json()}")
+            logger.debug(f"Response from Wild Apricot:\n {json.dumps(response.json(), indent=4)}")
             '''
             see https://app.swaggerhub.com/apis-docs/WildApricot/wild-apricot_api_for_non_administrative_access/7.15.0#/Contacts/get_accounts__accountId__contacts_me
             need signoff [NL] wautils (will be [NL] reporting), from field name "NL Signoffs and Categories" 
@@ -135,10 +140,10 @@ def check_report_access():
 
             # Find the NL Signoffs and Categories field
             signoffs_field = next((field for field in field_values if field['FieldName'] == 'NL Signoffs and Categories'), None)
-            # If the field was found and it has a non-empty value, check if [NL] wautils is present
+            # If the field was found and it has a non-empty value, check if [NL] reporting is present
             if signoffs_field and signoffs_field['Value']:
                 labels = [item['Label'] for item in signoffs_field['Value']]
-                if '[NL] wautils' in labels:
+                if '[NL] reporting' in labels:
                     return True
                 else:
                     return False

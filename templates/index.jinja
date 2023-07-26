@@ -1,0 +1,29 @@
+{% extends "base.jinja" %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+
+  <div class="mb-5"></div>
+
+  <div class="card">
+  <div class="card-body">
+    <h5 class="card-title">Welcome!</h5>
+    <div class="mt-5"></div>
+
+    {% if not logged_in %}
+    <p class="card-text">
+    Please login with your Nova Lab portal credentials to use the system. You must have the reporting signoff to access reports.
+    </p>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Log in</a>
+    </div>
+    {% else %}
+    <p>
+    You are logged in. If you have the reporting signoff, you can access the reports.
+    </p>
+    <a href="{{ url_for('reports.index') }}" class="btn btn-primary">Go to the report catalog</a>
+    <div class="mt-5">
+    <p>Having trouble getting in? You are welcome to try <a href="{{ url_for('auth.login') }}">logging in again</a>.</p>
+    </div>
+    {% endif %}
+  </div>
+
+{% endblock %}

@@ -1,7 +1,7 @@
 from flask import Blueprint, session, redirect, url_for, render_template
 from requests_oauthlib import OAuth2Session
 from functools import wraps
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import logging
 import auth
@@ -36,11 +36,14 @@ def require_login():
 
 @reports_blueprint.route("/")
 def index():
-    return f"<p>Report list</p><p><a href='{url_for('reports.test_report')}'>Test report</a></p>"
+    return render_template("catalog.jinja")
 
-@reports_blueprint.route("/test_report")
-def test_report():    
-    filter_string = "StartDate gt 2023-07-22 AND IsUpcoming eq false AND (substringof('Name', '_S') OR substringof('Name', '_P'))"
+@reports_blueprint.route("/missing_instructor_checkins")
+def report_missing_instructor_checkins():    
+    # TODO: automatically set starting date to 30 days ago
+    start_date = (datetime.today() - timedelta(days=31)).strftime('%Y-%m-%d')
+
+    filter_string = f"StartDate gt {start_date} AND IsUpcoming eq false AND (substringof('Name', '_S') OR substringof('Name', '_P'))"
     json_data = wadata.call_api("Events", filter_string)
      
     cancel_list = ['cancelled', 'canceled', 'cancellled', 'cancselled', 'canelled', 'cancel']
@@ -65,10 +68,18 @@ def test_report():
         if len(missing_instructors) > 0:
             # add the name(s) of the instructor to the event
             event.extend(missing_instructors)
+            # and let's reformat the date while we're at it
+            try:
+                if event[2] != None:
+                    event[2] = datetime.strptime(event[2], "%Y-%m-%dT%H:%M:%S%z").strftime("%Y-%m-%d %I%p")
+            except Exception as e:
+                logger.warn(f"Unable to format date string {event[2]} {e}")
+                pass
+
             flawed_events.append(event)
         logger.debug(f"Event registration JSON data: {json.dumps(json_data, indent=4)}")
 
     logger.debug(f"Found {len(flawed_events)} flawed events")
 
-    return render_template("test_report.jinja", event_info=flawed_events, datetime=datetime)
+    return render_template("report/missing_instructor_checkins.jinja", event_info=flawed_events, datetime=datetime)
     

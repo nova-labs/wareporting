@@ -1,0 +1,40 @@
+{% extends "base.jinja" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+  <div class="mb-5"><h1>Reports</h1></div>
+    <p>
+      Enjoy the power of the Wild Apricot API.
+    </p>
+
+  <div class="mb-5"></div>
+
+  <div class="card">  
+  <div class="card-body">
+    <h5 class="card-title">Missing instructor checkins</h5>
+    <p class="card-text">Shows a list of instructor-led classes within the past 30 days
+    where the instructor is not checked in. NOTE: This is a slow report. Be prepared
+    to wait a minute or two after clicking the button.</p>
+    <a href="{{ url_for('reports.report_missing_instructor_checkins') }}" class="btn btn-primary getreport" onclick="$('#myModal').modal('show');">Get report</a>
+  </div>
+
+  <div class="modal" tabindex="-1" role="dialog" id="myModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Processing</h5>
+      </div>
+      <div class="modal-body">
+        <p>Please wait while we generate your report...</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block javascript %}
+<script>
+$(function() {
+    // in case someone hits the back button
+    $('#myModal').modal('hide');
+});
+</script>
+{% endblock %}

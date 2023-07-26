@@ -1,15 +1,18 @@
 import auth
 import logging
 from time import sleep
+import json
 
 logger = logging.getLogger(__name__)
 
-def call_api(category, filter_string=None, event_id=None):
+def call_api(category, filter_string=None, event_id=None, asynchronous=False):
     oauth_session = auth.get_oauth_session()
     url = f"{auth.WA_API_PREFIX}/{category}"
 
-    params = [(str("$async"), str("false"))]
+    params = []
 
+    if not asynchronous:
+        params.append(("$async", "false"))
     if filter_string:
         params.append(("$filter", filter_string))
     if event_id:
@@ -41,5 +44,5 @@ def call_api(category, filter_string=None, event_id=None):
     
     logger.debug(f"API call successful, returning data.")
     logger.debug("*************************************")
-    logger.debug(request.json())
+    logger.debug(f"{json.dumps(request.json(), indent=4)}")
     return request.json()
