@@ -40,7 +40,7 @@ def index():
 
 @reports_blueprint.route("/missing_instructor_checkins")
 def report_missing_instructor_checkins():    
-    # TODO: automatically set starting date to 30 days ago
+    # automatically set starting date to 30 days ago
     start_date = (datetime.today() - timedelta(days=31)).strftime('%Y-%m-%d')
 
     filter_string = f"StartDate gt {start_date} AND IsUpcoming eq false AND (substringof('Name', '_S') OR substringof('Name', '_P'))"

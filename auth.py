@@ -130,7 +130,7 @@ def check_report_access():
             logger.debug(f"Response from Wild Apricot:\n {json.dumps(response.json(), indent=4)}")
             '''
             see https://app.swaggerhub.com/apis-docs/WildApricot/wild-apricot_api_for_non_administrative_access/7.15.0#/Contacts/get_accounts__accountId__contacts_me
-            need signoff [NL] wautils (will be [NL] reporting), from field name "NL Signoffs and Categories" 
+            need signoff "[NL] reporting" from field name "NL Signoffs and Categories" 
             see https://github.com/nova-labs/watto/blob/main/app/models/field.rb and
             https://github.com/nova-labs/watto/blob/main/app/models/user.rb
             based on what I see in the portal, if a signoff with the right name exists, the user has it.
