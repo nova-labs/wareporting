@@ -36,7 +36,7 @@ def require_login():
 
 @reports_blueprint.route("/")
 def index():
-    return render_template("catalog.jinja")
+    return render_template("catalog.jinja", logged_in=True)
 
 @reports_blueprint.route("/missing_instructor_checkins")
 def report_missing_instructor_checkins():    

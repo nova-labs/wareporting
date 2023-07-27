@@ -8,11 +8,30 @@
 </head>
 <body>
     <div class="container">
+
+    <header class="d-flex flex-wrap justify-content-center py-3 mb-4 border-bottom">
+      <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
+        <span class="fs-4">Nova Labs Reporting</span>
+      </a>
+
+      <ul class="nav nav-pills" id="header_nav_pills">
+        <li class="nav-item"><a href="/" class="nav-link {% if (request.path == '/') or (request.path == url_for('auth.logout')) %}active aria-current="page{% endif %}">Home</a></li>
+        {% if logged_in %}
+        <li class="nav-item"><a href="{{ url_for('reports.index') }}" class="nav-link {% if request.path == url_for('reports.index') %}active aria-current="page{% endif %}">Report Catalog</a></li>
+        <li class="nav-item"><a href="{{ url_for('auth.logout') }}" class="nav-link">Sign out</a></li>
+        {% else %}
+        <li class="nav-item"><a href="{{ url_for('auth.login') }}" class="nav-link {% if request.path == url_for('auth.login') %}active aria-current="page{% endif %}">Sign in</a></li>
+        {% endif %}        
+      </ul>
+    </header>
+
     <div id="content">{% block content %}{% endblock %}</div>
+
     <div id="footer" class="mt-5 d-flex align-items-center justify-content-between">        
         <div>A production by <a href="https://www.nova-labs.org/">Nova Labs</a>. &copy; 2023</div>
         <div><a href="https://github.com/nova-labs/wareporting">Fork me on GitHub</a></div>
     </div>
+
     <!-- Bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
     <!-- jQuery -->

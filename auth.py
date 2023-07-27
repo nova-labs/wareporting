@@ -96,7 +96,7 @@ def refresh_token():
 @auth_blueprint.route("/logout")
 def logout():
     session.clear()
-    return "Goodbye!"
+    return render_template("index.jinja", logged_in=False)
 
 def get_oauth_session():
     if 'api_token' not in session:
