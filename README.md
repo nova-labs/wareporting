@@ -5,7 +5,7 @@
 
 # Installation
   
-The application has been developed under Python 3.10.10. It is recommended that you use a virtual environment to install and run the application. (Either .venv or venv will be ignored by git.)
+The application has been developed under Python 3.10.10. It is recommended that you use a virtual environment to install and run the application. (Either `.venv` or `venv` will be ignored by git.)
 
 ```shell
 python -m venv .venv
@@ -37,9 +37,11 @@ Be aware that WA_REPORTING_DOMAIN is used to construct the redirect URI for OAut
 
 WA_REPORTING_DOMAIN must *also* be listed as a trusted redirect URI in the Authorized Applications section of the Wild Apricot account. If it is not, the OAuth2 flow will fail with almost no details.
 
+The app will look for a `.env` file in the main directory, and if found will set / override any environment variables. This is useful for development, for production you will want a service file instead.
+
 # Running the application
 
-For production, you should use a WSGI server such as gunicorn. 
+For production, you should use a WSGI server such as gunicorn. The WSGI app name is `wareporting:app`
 
 For development, you can run the application with:
 
@@ -51,6 +53,6 @@ which will automatically turn on debug mode and debug log statements. They are f
 
 # Using the application
 
-Users log in with their Nova Labs portal username and password. As this is a separate application, logins from the portal or wautils do not "carry over". Users must have the **\[NL\] reporting** signoff to use the application.
+Users log in with their Nova Labs portal username and password. As this is a separate application, logins from the portal or wautils do not "carry over". Users must have the `[NL] reporting` signoff to use the application.
 
 Please note that some reports can be quite slow. It seems as though the API is throttled, so it may take a while to pull down a large amount of data.
