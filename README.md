@@ -5,7 +5,7 @@
 
 # Installation
   
-The application has been developed under Python 3.10.10. It is recommended that you use a virtual environment to install and run the application.
+The application has been developed under Python 3.10.10. It is recommended that you use a virtual environment to install and run the application. (Either .venv or venv will be ignored by git.)
 
 ```shell
 python -m venv .venv
@@ -31,7 +31,7 @@ There are 4 environment variables that must be set for the application to run:
 | WA_REPORTING_API_KEY | API key for Wild Apricot, found in Authorized Applications -> wareporting |
 | WA_REPORTING_CLIENT_SECRET | Client secret for Wild Apricot, found in Authorized Applications -> wareporting |
 | WA_REPORTING_FLASK_SECRET_KEY | Flask secret key, used to encrypt session data; any complex value will do |
-| WA_REPORTING_DOMAIN | the domain name on which the application is running, e.g. www.nova-labs.org |
+| WA_REPORTING_DOMAIN | the domain name on which the application is running, e.g. wareporting.nova-labs.org |
 
 Be aware that WA_REPORTING_DOMAIN is used to construct the redirect URI for OAuth2, so it must match the domain name on which the application is running, and it must accept SSL connections under that name. There is no prefix  and no ending slash, just the domain name itself. Localhost is not acceptable. To run the application locally, you can use a service like [ngrok](https://ngrok.com) to create a domain name that will accept SSL connections. You are allowed one free static domain name, use that, because:
 
