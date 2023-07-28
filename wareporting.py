@@ -1,3 +1,9 @@
+from dotenv import load_dotenv
+# If a .env file is found it will override the environment!
+# Should be used only for development, and not added to git
+# (there is a .gitignore directive already)
+load_dotenv() 
+
 from flask import Flask
 from reports import reports_blueprint
 from auth import auth_blueprint
@@ -19,5 +25,7 @@ if __name__ == "__main__":
     app.debug = True
     logging.basicConfig(level=logging.WARNING)
     logging.getLogger('reports').setLevel(logging.DEBUG)
+    logging.getLogger('wareporting').setLevel(logging.DEBUG)
     #logging.getLogger('wadata').setLevel(logging.DEBUG)
+
     app.run()
