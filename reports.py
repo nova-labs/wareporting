@@ -114,7 +114,7 @@ def missing_instructor_checkins_complete():
         return f"No job started, do not access this page directly."
         
     if executor is None:        
-        return 'No jobs have been started'
+        return render_template('report/await_processing.jinja', done='reports.missing_instructor_checkins_complete')
 
     # Find the correct Future instance
     task_id = session["task_id"]
