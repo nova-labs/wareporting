@@ -110,11 +110,11 @@ def get_missing_instructor_checkins(start_date):
 
 @reports_blueprint.route("/missing_instructor_checkins_complete")
 def missing_instructor_checkins_complete():
-    if executor is None:
-        return 'No jobs have been started'
-    
     if "task_id" not in session:
         return f"No job started, do not access this page directly."
+        
+    if executor is None:        
+        return 'No jobs have been started'
 
     # Find the correct Future instance
     task_id = session["task_id"]
