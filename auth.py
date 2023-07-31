@@ -32,10 +32,7 @@ WILD_APRICOT_REDIRECT_URI = f"https://{WA_REPORTING_DOMAIN}/callback"
 
 @auth_blueprint.route("/")
 def index():
-    logged_in = False
-    if 'user_token' in session:
-        logged_in = True
-    return render_template("index.jinja", logged_in=logged_in)
+    return render_template("index.jinja")
 
 @auth_blueprint.route("/login")
 def login():
@@ -96,7 +93,7 @@ def refresh_token():
 @auth_blueprint.route("/logout")
 def logout():
     session.clear()
-    return render_template("index.jinja", logged_in=False)
+    return render_template("index.jinja")
 
 def get_oauth_session():
     if 'api_token' not in session:

@@ -1,0 +1,43 @@
+{% extends "base.jinja" %}
+{% block head %}
+{{ super() }}
+<title>Your report is processing</title>
+
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='loader.css') }}" />
+
+<meta http-equiv='Refresh' 
+  content='5;URL={{ url_for(request.args.get("done"), done=request.args.get("done")) }}'/>
+
+<script src="{{ url_for('static', filename='modernizr-vw.js') }}" async></script>
+
+{% endblock %}
+{% block content %}
+
+<div class="container content-lg mx-auto">
+	<div style="margin-bottom: 50px;"></div>
+			<div class="text-center" style="margin-bottom: 10px;">
+						
+			<!-- the circling worm, for modern / large screen -->
+			<div class="circle-container">
+	 		  	<div class="circle lg text-center" style="margin-bottom: 10px;">
+			    	<div class="circle md">
+			      		<div class="circle sm">
+			        		<div class="circle smlr">
+			        		</div>
+			      		</div>
+			    	</div>
+			  	</div>
+			</div>
+			
+			<br/><br/>		
+			
+			<div>
+			<h2 class="text-center">We are preparing your report...</h2>
+			<p class="text-center">Please be patient, this process may take a while if the network is busy.</p>
+			<div class="oldstyle" style="margin:auto"><img src={{ url_for('static', filename='waitlogo.gif') }} /></div>
+			</div>
+			  
+			</div>			  
+		</div>
+</div>
+{% endblock %}

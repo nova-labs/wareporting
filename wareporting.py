@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv() 
 
 from flask import Flask
+from flask_executor import Executor
 from reports import reports_blueprint
 from auth import auth_blueprint
 import logging
@@ -18,6 +19,9 @@ app = Flask(__name__)
 app.register_blueprint(auth_blueprint)
 app.register_blueprint(reports_blueprint, url_prefix='/reports')
 app.secret_key = os.environ['WA_REPORTING_FLASK_SECRET_KEY']
+
+# flask_executor plugin configuration
+app.config['EXECUTOR_TYPE'] = 'thread'
 
 if __name__ == "__main__":
     # This code will only run if you run this file directly. It will not run

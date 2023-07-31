@@ -9,7 +9,7 @@
     <h1 class="card-title">Welcome!</h1>
     <div class="mt-5"></div>
 
-    {% if not logged_in %}
+    {% if "user_token" not in session %}
     <p class="card-text">
     Please login with your Nova Lab portal credentials to use the system. You must have the reporting signoff to access reports.
     </p>

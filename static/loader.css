@@ -1,0 +1,55 @@
+* {
+    margin: 0;
+    padding: 0; }
+  
+  .circle-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%; }
+  
+  .cssvwunit .oldstyle {
+    display: none; }
+  
+  .no-cssvwunit .circle {
+    display: none; }
+  
+  .circle {
+    margin: auto;
+    border-radius: 50%;
+    animation: spin 3s linear infinite;
+    box-sizing: border-box;
+    border: 2px solid #fff; }
+  
+  .lg {
+    background-color: #F27992;
+    width: 20vw;
+    height: 20vw; }
+  
+  .md {
+    background-color: #D7556F;
+    width: 16vw;
+    height: 16vw; }
+  
+  .sm {
+    background-color: #BC324D;
+    width: 12vw;
+    height: 12vw; }
+  
+  .smlr {
+    background-color: #A10F2B;
+    width: 8vw;
+    height: 8vw; }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg); }
+    100% {
+      transform: rotate(359deg); } }
+  @keyframes spin_reverse {
+    0% {
+      transform: rotate(0deg); }
+    100% {
+      transform: rotate(-359deg); } }
+  
