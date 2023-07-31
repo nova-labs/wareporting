@@ -9,6 +9,7 @@ import auth
 import wadata
 import json
 import random
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -60,6 +61,9 @@ def report_missing_instructor_checkins():
     future = executor.submit_stored(task_id, get_missing_instructor_checkins, start_date)
     # Store the Future instance's unique identifier in the user's session
     session["task_id"] = task_id
+
+    # allow time for executor to be registered
+    time.sleep(2)
 
     return redirect(url_for('reports.missing_instructor_checkins_complete', done='reports.missing_instructor_checkins_complete'))
 
@@ -120,13 +124,14 @@ def missing_instructor_checkins_complete():
         return render_template('report/await_processing.jinja', done='reports.missing_instructor_checkins_complete')
     
     future = executor.futures.pop(task_id)
-    if future is None:
+    session["task_id"] = None
+    if future is None:        
         return f"Future with task_id {task_id} not found"
 
     # Get the result (or exception) from the Future
     exception = future.exception()
     if exception is not None:
-        # The function raised an exception            
+        # The function raised an exception           
         return f"Error running job: {exception}"
     else:
         flawed_events, start_date = future.result()            
