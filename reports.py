@@ -17,8 +17,14 @@ reports_blueprint = Blueprint('reports', __name__)
 executor = None
 
 # All routes in this blueprint require an active login
+# UNLESS we are connecting on localhost, in dev mode, and 
+# WA_REPORTING_DOMAIN is set to localhost
 @reports_blueprint.before_request
 def require_login():
+    if current_app.config["ALLOW_LOCALHOST"] == True and auth.WA_REPORTING_DOMAIN == "localhost" and request.remote_addr == '127.0.0.1':
+        session["allow_localhost"] = True
+        return
+
     if 'user_token' not in session:
         logger.info(f"User token not found in session, redirecting to login.")
         return redirect(url_for('auth.login'))
@@ -98,7 +104,7 @@ def get_missing_instructor_checkins(start_date):
                 if event[2] != None:
                     event[2] = datetime.strptime(event[2], "%Y-%m-%dT%H:%M:%S%z").strftime("%Y-%m-%d %I%p")
             except Exception as e:
-                logger.warn(f"Unable to format date string {event[2]} {e}")
+                logger.warning(f"Unable to format date string {event[2]} {e}")
                 pass
 
             flawed_events.append(event)

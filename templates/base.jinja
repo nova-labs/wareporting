@@ -18,7 +18,7 @@
 
       <ul class="nav nav-pills" id="header_nav_pills">
         <li class="nav-item"><a href="/" class="nav-link {% if (request.path == '/') or (request.path == url_for('auth.logout')) %}active aria-current="page{% endif %}">Home</a></li>
-        {% if "user_token" in session %}
+        {% if "user_token" in session or session["allow_localhost"] == True %}
         <li class="nav-item"><a href="{{ url_for('reports.index') }}" class="nav-link {% if request.path == url_for('reports.index') %}active aria-current="page{% endif %}">Report Catalog</a></li>
         <li class="nav-item"><a href="{{ url_for('auth.logout') }}" class="nav-link">Sign out</a></li>
         {% else %}

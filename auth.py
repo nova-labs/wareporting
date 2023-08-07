@@ -1,4 +1,4 @@
-from flask import Blueprint, session, request, redirect, url_for, render_template
+from flask import Blueprint, session, request, redirect, url_for, render_template, current_app
 import requests
 from requests_oauthlib import OAuth2Session
 from requests.auth import HTTPBasicAuth
@@ -32,6 +32,8 @@ WILD_APRICOT_REDIRECT_URI = f"https://{WA_REPORTING_DOMAIN}/callback"
 
 @auth_blueprint.route("/")
 def index():
+    if current_app.config["ALLOW_LOCALHOST"] == True and WA_REPORTING_DOMAIN == "localhost" and request.remote_addr == '127.0.0.1':            
+        session["allow_localhost"] = True            
     return render_template("index.jinja")
 
 @auth_blueprint.route("/login")
@@ -66,7 +68,7 @@ def callback():
         refresh_token()
         return redirect(url_for('reports.index'))
     else:
-        logger.warn(f"User token not received. Login error?")
+        logger.warning(f"User token not received. Login error?")
         return "User login token not received. Please try again."
 
 def refresh_token():
@@ -93,7 +95,7 @@ def refresh_token():
 @auth_blueprint.route("/logout")
 def logout():
     session.clear()
-    return render_template("index.jinja")
+    return index()
 
 def get_oauth_session():
     if 'api_token' not in session:
@@ -145,7 +147,7 @@ def check_report_access():
                 else:
                     return False
             else:
-                logger.warn("NL Signoffs and Categories field is not present or has an empty value")
+                logger.warning("NL Signoffs and Categories field is not present or has an empty value")
                 return False
 
         else:

@@ -11,6 +11,8 @@ from auth import auth_blueprint
 import logging
 import os
 
+logger = logging.getLogger(__name__)
+
 # This code sets up the flask application and registers the auth and reports
 # blueprints. It also sets a secret key which is used to sign session cookies
 # and other things. The secret key is stored in the environment variable
@@ -22,14 +24,18 @@ app.secret_key = os.environ['WA_REPORTING_FLASK_SECRET_KEY']
 
 # flask_executor plugin configuration
 app.config['EXECUTOR_TYPE'] = 'thread'
+app.config['ALLOW_LOCALHOST'] = False
 
 if __name__ == "__main__":
     # This code will only run if you run this file directly. It will not run
     # for production servers. It sets up useful logging.
     app.debug = True
+    app.config['ALLOW_LOCALHOST'] = True
     logging.basicConfig(level=logging.WARNING)
     logging.getLogger('reports').setLevel(logging.DEBUG)
     logging.getLogger('wareporting').setLevel(logging.DEBUG)
     #logging.getLogger('wadata').setLevel(logging.DEBUG)
+
+    logger.warning("Running in dev mode. This should not be used for production.")
 
     app.run()
