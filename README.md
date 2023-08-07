@@ -66,3 +66,7 @@ which will automatically turn on debug mode and debug log statements. They are f
 Users log in with their Nova Labs portal username and password. As this is a separate application, logins from the portal or wautils do not "carry over". Users must have the `[NL] reporting` signoff to use the application.
 
 Please note that some reports can be quite slow. It seems as though the API is throttled, so it may take a while to pull down a large amount of data.
+
+# Wild Apricot API
+
+There is SwaggerHub documentation for [Wild Apricot API version 2.2](https://app.swaggerhub.com/apis-docs/WildApricot/wild-apricot_public_api/7.15.0#/) Also see [API Version 2.2 differences](https://gethelp.wildapricot.com/en/articles/1683-api-version-2-2-differences) which has links in the sidebar that show available filters.
