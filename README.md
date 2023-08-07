@@ -37,9 +37,9 @@ The app will look for a `.env` file in the main directory, and if found will set
 
 # User OAuth and domain names
 
-Be aware that WA_REPORTING_DOMAIN is used to construct the redirect URI for OAuth2, so it must match the domain name on which the application is running, and it must accept SSL connections under that name. There is no prefix  and no ending slash, just the domain name itself. To run the OAuth locally, you can use a service like [ngrok](https://ngrok.com) to create a domain name that will accept SSL connections. You are allowed one free static domain name, use that, because:
+Be aware that `WA_REPORTING_DOMAIN` is used to construct the redirect URI for OAuth2, so it must match the domain name on which the application is running, and it must accept SSL connections under that name. There is no prefix  and no ending slash, just the domain name itself. To run the OAuth locally, you can use a service like [ngrok](https://ngrok.com) to create a domain name that will accept SSL connections. You are allowed one free static domain name, use that, because:
 
-WA_REPORTING_DOMAIN must *also* be listed as a trusted redirect URI in the Authorized Applications section of the Wild Apricot account. If it is not, the OAuth2 flow will fail with almost no details.
+`WA_REPORTING_DOMAIN` must *also* be listed as a trusted redirect URI in the Authorized Applications section of the Wild Apricot account. If it is not, the OAuth2 flow will fail with almost no details.
 
 ## Skipping user OAuth
 
