@@ -69,7 +69,7 @@ Please note that some reports can be quite slow. It seems as though the API is t
 
 # Wild Apricot API
 
-There is SwaggerHub documentation for [Wild Apricot API version 2.2](https://app.swaggerhub.com/apis-docs/WildApricot/wild-apricot_public_api/7.15.0#/) Also see [API Version 2.2 differences](https://gethelp.wildapricot.com/en/articles/1683-api-version-2-2-differences) which has links in the sidebar that show available filters.
+There is SwaggerHub documentation for [Wild Apricot API version 2.2](https://app.swaggerhub.com/apis-docs/WildApricot/wild-apricot_public_api/7.24.0) Also see [API Version 2.2 differences](https://gethelp.wildapricot.com/en/articles/1683-api-version-2-2-differences) which has links in the sidebar that show available filters.
 
 Postman can be configured to help you explore the API. In your Authorization area, set as follows:
 
