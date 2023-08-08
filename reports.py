@@ -1,4 +1,4 @@
-from flask import Blueprint, session, redirect, url_for, render_template, request, current_app
+from flask import Blueprint, session, redirect, url_for, render_template, request, current_app, flash
 from flask_executor import Executor
 from requests_oauthlib import OAuth2Session
 from functools import wraps
@@ -10,6 +10,7 @@ import wadata
 import json
 import random
 import time
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ def report_missing_instructor_checkins():
 
 def get_missing_instructor_checkins(start_date):  
     filter_string = f"StartDate gt {start_date} AND IsUpcoming eq false AND (substringof('Name', '_S') OR substringof('Name', '_P'))"
-    json_data = wadata.call_api("Events", filter_string)
+    json_data = wadata.call_api("Events", filter_string=filter_string)
      
     cancel_list = ['cancelled', 'canceled', 'cancellled', 'cancselled', 'canelled', 'cancel']
     events = [[event['Id'], event['Name'], event['StartDate']] for event in json_data['Events'] if 
@@ -172,5 +173,51 @@ def missing_instructor_checkins_complete():
     else:
         flawed_events, start_date = future.result()            
 
-    return render_template("report/missing_instructor_checkins.jinja", event_info=flawed_events, start_date=start_date, datetime=datetime)
+    return render_template("report/missing_instructor_checkins.jinja", event_info=flawed_events, 
+                           start_date=start_date, datetime=datetime)
 
+@reports_blueprint.route("/slack_freeloaders")
+def report_slackfreeloaders(): 
+    if 'file' not in request.files:
+        return 'No file part', 400
+    slack_file = request.files['slack_file']
+    if slack_file.filename == '':
+        return 'No selected file', 400
+    
+    if slack_file:     
+        start_report_task(get_slack_freeloaders, slack_file)
+
+    return redirect(url_for('reports.slack_freeloaders_complete', done='reports.slack_freeloaders_complete'))
+
+def get_slack_freeloaders(slack_file):  
+    # As presently written, this includes ALL membership levels except for
+    # Youth Robotics, one-time payment.
+    filter_string = "IsMember eq true AND MembershipLevelId ne 1214629 AND ('Status' eq 'Active' "\
+        "or 'Status' eq 'PendingNew' or 'Status' eq 'PendingRenewal' or 'Status' eq 'PendingUpgrade')"
+    json_data = wadata.call_api("Contacts", filter_string=filter_string)
+
+    valid_emails = [contact['Email'] for contact in json_data['Contacts'] if contact['Email'] != None]
+    logger.debug(f"Valid emails: {len(valid_emails)}")
+
+    df = pd.read_csv(slack_file)
+    logger.debug(df.head())
+
+    invalid_emails = []
+
+    # TODO extract all the emails, then check against slack file
+    
+    return invalid_emails, len(valid_emails)
+
+@reports_blueprint.route("/slack_freeloaders_complete")
+def slack_freeloaders_complete():
+    status_page, future = get_results_by_task_id(done='reports.slack_freeloaders_complete')
+
+    if status_page is not None:
+        return status_page
+    else:
+        freeloaders, num_membership_emails = future.result()            
+
+    # return render_template("report/slack_freeloaders.jinja", freeloaders=freeloaders, num_membership_emails=num_membership_emails)
+    return f"Found {len(freeloaders)} Slakc freeloaders and {num_membership_emails} membership emails."
+
+     
