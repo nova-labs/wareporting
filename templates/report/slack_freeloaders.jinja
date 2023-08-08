@@ -1,0 +1,25 @@
+{% extends "base.jinja" %}
+{% block title %}Slack Freeloaders{% endblock %}
+{% block content %}
+<div class="mb-5"><h1>Slack Freeloaders</h1></div>
+<p>There are {{ num_membership_emails}} valid member emails. Those below don't have one of them!
+{{ num_freeloaders }} freeloaders found.</p>
+<table class="table table-striped table-bordered">
+<thead>
+  <tr>
+    <th>Username</th>
+    <th>Full name</th>
+    <th>Slack email</th>
+  </tr>
+</thead>
+<tbody>
+{% for freeloader in freeloaders %}
+  <tr>
+    <td>{{ freeloader.username }}</td>
+    <td>{{ freeloader.fullname }}</td>
+    <td>{{ freeloader.email }}</td>
+  </tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}

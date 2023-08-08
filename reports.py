@@ -176,20 +176,21 @@ def missing_instructor_checkins_complete():
     return render_template("report/missing_instructor_checkins.jinja", event_info=flawed_events, 
                            start_date=start_date, datetime=datetime)
 
-@reports_blueprint.route("/slack_freeloaders")
+@reports_blueprint.route("/slack_freeloaders", methods=['POST'])
 def report_slackfreeloaders(): 
     if 'file' not in request.files:
         return 'No file part', 400
-    slack_file = request.files['slack_file']
+    slack_file = request.files['file']
     if slack_file.filename == '':
         return 'No selected file', 400
     
     if slack_file:     
-        start_report_task(get_slack_freeloaders, slack_file)
+        df = pd.read_csv(slack_file)
+        start_report_task(get_slack_freeloaders, df)
 
     return redirect(url_for('reports.slack_freeloaders_complete', done='reports.slack_freeloaders_complete'))
 
-def get_slack_freeloaders(slack_file):  
+def get_slack_freeloaders(df):  
     # As presently written, this includes ALL membership levels except for
     # Youth Robotics, one-time payment.
     filter_string = "IsMember eq true AND MembershipLevelId ne 1214629 AND ('Status' eq 'Active' "\
@@ -197,16 +198,22 @@ def get_slack_freeloaders(slack_file):
     json_data = wadata.call_api("Contacts", filter_string=filter_string)
 
     valid_emails = [contact['Email'] for contact in json_data['Contacts'] if contact['Email'] != None]
+    
     logger.debug(f"Valid emails: {len(valid_emails)}")
-
-    df = pd.read_csv(slack_file)
     logger.debug(df.head())
 
-    invalid_emails = []
+    # find all rows where the email is not in the valid emails list
+    filtered_df = df[~df['email'].isin(valid_emails)]
+    # ignore any (Alumni) users (they are not freeloaders)
+    filtered_df = filtered_df[~filtered_df['fullname'].str.contains('(Alumni)', na=False)]
+    logger.debug(f"Filtered df length: {filtered_df.shape[0]}")
 
-    # TODO extract all the emails, then check against slack file
+    # return the invalid users and their relevant information
+    freeloaders = filtered_df[['username', 'fullname', 'email']].to_dict(orient='records')
+    logger.debug(f"Freeloaders length: {len(freeloaders)}")
+    logger.debug(f"{freeloaders[0]}")
     
-    return invalid_emails, len(valid_emails)
+    return freeloaders, len(valid_emails)
 
 @reports_blueprint.route("/slack_freeloaders_complete")
 def slack_freeloaders_complete():
@@ -217,7 +224,8 @@ def slack_freeloaders_complete():
     else:
         freeloaders, num_membership_emails = future.result()            
 
-    # return render_template("report/slack_freeloaders.jinja", freeloaders=freeloaders, num_membership_emails=num_membership_emails)
-    return f"Found {len(freeloaders)} Slakc freeloaders and {num_membership_emails} membership emails."
+    return render_template("report/slack_freeloaders.jinja", freeloaders=freeloaders, 
+                           num_freeloaders=len(freeloaders),
+                           num_membership_emails=num_membership_emails)
 
      
