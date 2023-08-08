@@ -70,3 +70,18 @@ Please note that some reports can be quite slow. It seems as though the API is t
 # Wild Apricot API
 
 There is SwaggerHub documentation for [Wild Apricot API version 2.2](https://app.swaggerhub.com/apis-docs/WildApricot/wild-apricot_public_api/7.15.0#/) Also see [API Version 2.2 differences](https://gethelp.wildapricot.com/en/articles/1683-api-version-2-2-differences) which has links in the sidebar that show available filters.
+
+Postman can be configured to help you explore the API. In your Authorization area, set as follows:
+
+| Variable | Value |
+| --- | --- |
+| Type | OAuth 2.0 |
+| Add auth data to | Request Headers |
+| Auto-refresh token | On |
+| Grant Type | Client Credentials |
+| Access Token URL | https://oauth.wildapricot.org/auth/token |
+| Client ID | APIKEY |
+| Client Secret | API key for Wild Apricot, found in Authorized Applications -> wareporting |
+| Scope | auto |
+| Client Authentication | Send as Basic Auth header |
+| Token Request | add Key = obtain_refresh_token and Value = true, Send In = Request Body |
