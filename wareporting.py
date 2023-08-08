@@ -38,4 +38,4 @@ if __name__ == "__main__":
 
     logger.warning("Running in dev mode. This should not be used for production.")
 
-    app.run()
+    app.run(port = os.environ.get("PORT", 5000))
