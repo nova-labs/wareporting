@@ -89,9 +89,10 @@ def get_results_by_task_id(done):
     # Find the correct Future instance
     task_id = session["task_id"]
 
-    if not executor.futures.done(task_id):
-        logger.debug("Job is still running...")
-        status_page = render_template('report/await_processing.jinja', done=done)
+    if status_page is None: 
+        if not executor.futures.done(task_id):
+            logger.debug("Job is still running...")
+            status_page = render_template('report/await_processing.jinja', done=done)            
     
     if status_page is None:
         # we have finished!
