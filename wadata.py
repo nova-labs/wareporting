@@ -5,7 +5,7 @@ import json
 
 logger = logging.getLogger(__name__)
 
-def call_api(category, filter_string=None, event_id=None, asynchronous=False):
+def call_api(category, filter_string=None, select_string=None, event_id=None, asynchronous=False):
     oauth_session = auth.get_oauth_session()
     url = f"{auth.WA_API_PREFIX}/{category}"
 
@@ -15,8 +15,10 @@ def call_api(category, filter_string=None, event_id=None, asynchronous=False):
         params.append(("$async", "false"))
     if filter_string:
         params.append(("$filter", filter_string))
+    if select_string:
+        params.append(("$select", select_string))
     if event_id:
-        params.append(("eventId", str(event_id)))
+        params.append(("eventId", str(event_id)))   
 
     logger.debug(f"API url will be: {url}")
     logger.debug(f"API parameters will be: {params}")
