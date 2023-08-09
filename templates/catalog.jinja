@@ -24,7 +24,7 @@
     <h5 class="card-title">Slack freeloaders</h5>
     <form action="{{ url_for('reports.report_slackfreeloaders') }}" method="POST" enctype="multipart/form-data">
     <p class="card-text">Shows folks with e-mails that appear in Slack, but are not active or pending members, or alumni.
-    To use this, you must have a CSV file exported from Slack. Required columns are Slack username, email, fullname.</p>
+    To use this, you must have a CSV file exported from Slack. Required columns are Slack username, email, fullname, status.</p>
     <input type="file" name="file">
     <button type="submit" class="btn btn-primary">Get report</button>
     </form>

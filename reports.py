@@ -66,9 +66,6 @@ def start_report_task(processor_function, *args, **kwargs):
     # Store the Future instance's unique identifier in the user's session
     session["task_id"] = task_id
 
-    # allow time for executor to be registered
-    time.sleep(2)
-
     return
 
 # Reports can be slow, so we need to process them asynchronously.
@@ -202,14 +199,16 @@ def get_slack_freeloaders(df):
     logger.debug(f"Valid emails: {len(valid_emails)}")
     logger.debug(df.head())
 
-    # find all rows where the email is not in the valid emails list
-    filtered_df = df[~df['email'].isin(valid_emails)]
+    # ignore any users that are already deactivated
+    df = df[df['status'] != 'Deactivated']
     # ignore any (Alumni) users (they are not freeloaders)
-    filtered_df = filtered_df[~filtered_df['fullname'].str.contains('(Alumni)', na=False)]
-    logger.debug(f"Filtered df length: {filtered_df.shape[0]}")
+    df = df[~df['fullname'].str.contains('(Alumni)', na=False)]
+    # find all rows where the email is *not* in the valid emails list
+    df = df[~df['email'].isin(valid_emails)]
+    logger.debug(f"Filtered df length: {df.shape[0]}")
 
     # return the invalid users and their relevant information
-    freeloaders = filtered_df[['username', 'fullname', 'email']].to_dict(orient='records')
+    freeloaders = df[['username', 'fullname', 'email']].to_dict(orient='records')
     logger.debug(f"Freeloaders length: {len(freeloaders)}")
     logger.debug(f"{freeloaders[0]}")
     
@@ -222,10 +221,8 @@ def slack_freeloaders_complete():
     if status_page is not None:
         return status_page
     else:
-        freeloaders, num_membership_emails = future.result()            
+        freeloaders, num_membership_emails = future.result()           
 
     return render_template("report/slack_freeloaders.jinja", freeloaders=freeloaders, 
                            num_freeloaders=len(freeloaders),
                            num_membership_emails=num_membership_emails)
-
-     
