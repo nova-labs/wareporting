@@ -1,9 +1,9 @@
 {% extends "base.jinja" %}
-{% block title %}Slack Freeloaders{% endblock %}
+{% block title %}Slack Orphans{% endblock %}
 {% block content %}
-<div class="mb-5"><h1>Slack Freeloaders</h1></div>
+<div class="mb-5"><h1>Slack Orphans</h1></div>
 <p>There are {{ num_membership_emails}} valid member emails. Those below don't have one of them!
-{{ num_freeloaders }} freeloaders found.</p>
+{{ num_orphans }} orphans found.</p>
 
 <table class="table table-striped table-bordered">
 <thead>
@@ -14,11 +14,11 @@
   </tr>
 </thead>
 <tbody>
-{% for freeloader in freeloaders %}
+{% for orphan in orphans %}
   <tr>
-    <td>{{ freeloader.username }}</td>
-    <td>{{ freeloader.fullname }}</td>
-    <td>{{ freeloader.email }}</td>
+    <td>{{ orphan.username }}</td>
+    <td>{{ orphan.fullname }}</td>
+    <td>{{ orphan.email }}</td>
   </tr>
 {% endfor %}
 </tbody>
