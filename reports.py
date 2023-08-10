@@ -111,9 +111,11 @@ def report_missing_instructor_checkins():
     # set reporting start date based on delta_days, defaults to 31 days ago
     try:
         delta_days = int(request.args.get('delta_days', 31))
+        logger.info(f"Looking for missing instructor checkins over the past {delta_days} days.")
     except ValueError:
-        return f"delta_days value {delta_days} was not an integer."    
-    logger.info(f"Looking for missing instructor checkins over the past {delta_days} days.")
+        flash(f"Input value for Missing Instructor Checkins {request.args.get('delta_days')} was not an integer.", "error")
+        return redirect(url_for('reports.index'))  
+    
     start_date = (datetime.today() - timedelta(days=delta_days)).strftime('%Y-%m-%d')
 
     start_report_task(get_missing_instructor_checkins, start_date)
@@ -173,21 +175,39 @@ def missing_instructor_checkins_complete():
     return render_template("report/missing_instructor_checkins.jinja", event_info=flawed_events, 
                            start_date=start_date, datetime=datetime)
 
-@reports_blueprint.route("/slack_freeloaders", methods=['POST'])
-def report_slackfreeloaders(): 
+@reports_blueprint.route("/slack_orphans", methods=['POST'])
+def report_slack_orphans():
     if 'file' not in request.files:
-        return 'No file part', 400
+        flash('No file submitted', 'error')
+        return redirect(url_for('reports.index'))
     slack_file = request.files['file']
     if slack_file.filename == '':
-        return 'No selected file', 400
+        flash('No file selected', 'error')
+        return redirect(url_for('reports.index'))
+    elif not slack_file.filename.endswith('.csv'):
+        flash('File must be a CSV', 'error')
+        return redirect(url_for('reports.index'))
     
     if slack_file:     
-        df = pd.read_csv(slack_file)
-        start_report_task(get_slack_freeloaders, df)
+        try:
+            df = pd.read_csv(slack_file)
+        except Exception as e:
+            flash(f"Error reading CSV file: {e}", 'error')
+            return redirect(url_for('reports.index'))
 
-    return redirect(url_for('reports.slack_freeloaders_complete', done='reports.slack_freeloaders_complete'))
+        # Check if the dataframe has the required columns
+        required_columns = ['username', 'email', 'fullname', 'status']
+        missing_columns = [column for column in required_columns if column not in df.columns]
 
-def get_slack_freeloaders(df):  
+        if missing_columns:
+            flash(f"The uploaded CSV is missing the following required header columns: {', '.join(missing_columns)}.", 'warning')
+            return redirect(url_for('reports.index'))
+
+        start_report_task(get_slack_orphans, df)
+
+    return redirect(url_for('reports.slack_orphans_complete', done='reports.slack_orphans_complete'))
+
+def get_slack_orphans(df):  
     # As presently written, this includes ALL membership levels except for
     # Youth Robotics, one-time payment.
     filter_string = "IsMember eq true AND MembershipLevelId ne 1214629 AND ('Status' eq 'Active' "\
@@ -208,21 +228,21 @@ def get_slack_freeloaders(df):
     logger.debug(f"Filtered df length: {df.shape[0]}")
 
     # return the invalid users and their relevant information
-    freeloaders = df[['username', 'fullname', 'email']].to_dict(orient='records')
-    logger.debug(f"Freeloaders length: {len(freeloaders)}")
-    logger.debug(f"{freeloaders[0]}")
+    orphans = df[['username', 'fullname', 'email']].to_dict(orient='records')
+    logger.debug(f"Orphans length: {len(orphans)}")
+    logger.debug(f"{orphans[0]}")
     
-    return freeloaders, len(valid_emails)
+    return orphans, len(valid_emails)
 
-@reports_blueprint.route("/slack_freeloaders_complete")
-def slack_freeloaders_complete():
-    status_page, future = get_results_by_task_id(done='reports.slack_freeloaders_complete')
+@reports_blueprint.route("/slack_orphans_complete")
+def slack_orphans_complete():
+    status_page, future = get_results_by_task_id(done='reports.slack_orphans_complete')
 
     if status_page is not None:
         return status_page
     else:
-        freeloaders, num_membership_emails = future.result()           
+        orphans, num_membership_emails = future.result()           
 
-    return render_template("report/slack_freeloaders.jinja", freeloaders=freeloaders, 
-                           num_freeloaders=len(freeloaders),
+    return render_template("report/slack_orphans.jinja", orphans=orphans, 
+                           num_orphans=len(orphans),
                            num_membership_emails=num_membership_emails)
