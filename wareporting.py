@@ -25,6 +25,7 @@ app.secret_key = os.environ['WA_REPORTING_FLASK_SECRET_KEY']
 # flask_executor plugin configuration
 app.config['EXECUTOR_TYPE'] = 'thread'
 app.config['ALLOW_LOCALHOST'] = False
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1000 * 1000 # 16 MB max file upload size
 
 if __name__ == "__main__":
     # This code will only run if you run this file directly. It will not run
