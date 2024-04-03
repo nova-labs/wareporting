@@ -3,3 +3,9 @@ venv
 /secrets.txt
 /__pycache__
 .env
+/.idea/aws.xml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/vcs.xml
+/.idea/wareporting.iml

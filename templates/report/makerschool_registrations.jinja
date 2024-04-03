@@ -1,0 +1,36 @@
+{% extends "base.jinja" %}
+{% block title %}Makerschool registrations{% endblock %}
+{% block content %}
+    <div class="mb-5"><h1>Makerschool registrations for current and upcoming events</h1></div>
+    {% if events %}
+        <p>Total registrations: {{ total_registrations }}<br>
+        Total possible registrations: {{ total_registration_limit }}</p>
+        <p>Showing {{ events|length }} events.</p>
+
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Confirmed registrations</th>
+                    <th>Registration limit</th>
+                    <th>Start date</th>
+                    <th>End date</th>
+                </tr>
+            <tbody>
+            {% for event_id in events.keys() %}
+                <tr>
+                    <td>{{ event_id }}</td>
+                    <td>{{ events[event_id]["Name"] }}</td>
+                    <td>{{ events[event_id]["ConfirmedRegistrationsCount"] }}</td>
+                    <td>{{ events[event_id]["RegistrationsLimit"] }}</td>
+                    <td>{{ events[event_id]["StartDate"] }}</td>
+                    <td>{{ events[event_id]["EndDate"] }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No matching data found.</p>
+    {% endif %}
+{% endblock %}

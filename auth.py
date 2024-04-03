@@ -24,6 +24,8 @@ say "an error occurred" and not give any details.
 
 Use ngrok for local development, but be aware of condition 2 above. Use
 your free static domain name.
+
+Using localhost? See the notes in the README -- you can't use the login button.
 '''
 WA_REPORTING_DOMAIN = os.environ['WA_REPORTING_DOMAIN']
 

@@ -1,7 +1,7 @@
 {% extends "base.jinja" %}
 {% block title %}Reports{% endblock %}
 {% block content %}
-  <div class="mb-5"><h1>Reports</h1></div>
+    <div class="mb-5"><h1>Reports</h1></div>
     <p>
       Enjoy the power of the Wild Apricot API.
     </p>
@@ -19,14 +19,25 @@
     {% endif %}
   {% endwith %}
 
-  <div class="mb-5"></div>
+    <div class="mb-5"></div>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Makerschool registrations</h5>
+            <form action="{{ url_for('reports.report_makerschool_registrations') }}">
+                <p class="card-text">Shows the number of registrations for all current and future makerschool classes.</p>
+                <button type="submit" class="btn btn-primary">Get report</button>
+            </form>
+        </div>
+    </div>
 
   <div class="card">  
   <div class="card-body">
     <h5 class="card-title">Missing instructor checkins</h5>
     <form action="{{ url_for('reports.report_missing_instructor_checkins') }}">
-    <p class="card-text">Shows a list of instructor-led classes within the past <input value="31" name="delta_days" /> days
-    where the instructor is not checked in. NOTE: This is a slow report. Be prepared
+    <p class="card-text">Shows a list of instructor-led classes within the past <input value="31" name="delta_days"
+        aria-label="Number of past days to consider for instructor-led classes" /> days
+    for which the instructor is not checked in. NOTE: This is a slow report. Be prepared
     to wait a minute or two after clicking the button.</p>
     <button type="submit" class="btn btn-primary">Get report</button>
     </form>

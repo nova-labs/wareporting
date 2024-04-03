@@ -45,7 +45,7 @@ Be aware that `WA_REPORTING_DOMAIN` is used to construct the redirect URI for OA
 
 Don't want to bother with ngrok? Set `WA_REPORTING_DOMAIN` to `localhost` and start the application by running wareporting directly (see below). Access your application on localhost or 127.0.0.1.
 
-In this configuration, the "Login" buttons will not work. Just go straight to the Report Catalog, which should be visible on all relevant pages.
+In this configuration, **the "Login" buttons will not work**. Just go straight to the Report Catalog, which should be visible on all relevant pages.
 
 Whatever you choose, you will, of course, still need to know the API key.
 
