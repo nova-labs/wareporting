@@ -10,17 +10,22 @@ The application has been developed under Python 3.10.10. It is recommended that 
 ```shell
 python -m venv .venv
 ```
-Activate the virtual environment:
+Activate the virtual environment and install `pip-tools` if not already installed:
+
+```shell
 
 ```bash
 source .venv/bin/activate
+python -m pip install pip-tools
 ```
 
-Dependencies are in requirements.txt. Install them with:
+Dependencies are managed by [pip-tools](https://github.com/jazzband/pip-tools) in requirements.in, and compiled by `pip-sync` to `requirements.txt`. 
+Install them with:
 
 ```shell
-pip install -r requirements.txt
+pip-sync requirements.txt
 ```
+If you add or remove dependencies, please update `requirements.in` and run `pip-compile` to update `requirements.txt`.
 
 # Configuration
 
@@ -56,7 +61,7 @@ For production, you should use a WSGI server such as gunicorn. The WSGI app name
 For development, you can run the application with:
 
 ```python
-py wareporting.py
+python wareporting.py
 ```
 
 which will automatically turn on debug mode and debug log statements. They are fairly verbose. This will also allow you to use `localhost` as the `WA_REPORTING_DOMAIN` and skip user OAuth.
