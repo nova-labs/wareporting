@@ -26,7 +26,7 @@ Install them with:
 ```shell
 pip-sync requirements.txt
 ```
-If you add or remove dependencies, please update `requirements.in` and run `pip-compile` to update `requirements.txt`.
+If you add or remove dependencies, please update `requirements.in` and run `pip-compile` to update `requirements.txt`, followed by pip-sync.
 
 For development, developer-only dependencies are listed in `requirements-dev.in`. Install them with:
 
@@ -34,7 +34,7 @@ For development, developer-only dependencies are listed in `requirements-dev.in`
 pip-sync requirements-dev.txt
 ```
 
-If you update the dependencies in `requirements-dev.in`, run: `pip-compile dev-requirements.in -c requirements.txt` (this constrains the development packages to obey `requirements.txt`).
+If you update the dependencies in `requirements-dev.in`, run: `pip-compile dev-requirements.in -c requirements.txt` (this constrains the development packages to obey `requirements.txt`). Then run `pip-sync requirements-dev.txt`.
 
 # Configuration
 
