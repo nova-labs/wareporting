@@ -28,6 +28,14 @@ pip-sync requirements.txt
 ```
 If you add or remove dependencies, please update `requirements.in` and run `pip-compile` to update `requirements.txt`.
 
+For development, developer-only dependencies are listed in `requirements-dev.in`. Install them with:
+
+```shell
+pip-sync requirements-dev.txt
+```
+
+If you update the dependencies in `requirements-dev.in`, run: `pip-compile dev-requirements.in -c requirements.txt` (this constrains the development packages to obey `requirements.txt`).
+
 # Configuration
 
 There are 4 environment variables that must be set for the application to run:
@@ -66,6 +74,14 @@ python wareporting.py
 ```
 
 which will automatically turn on debug mode and debug log statements. They are fairly verbose. This will also allow you to use `localhost` as the `WA_REPORTING_DOMAIN` and skip user OAuth.
+
+# Running tests
+
+The repository includes tests.
+
+- Run tests: `pytest -s`.
+
+Note: The test uses network access and valid Wild Apricot credentials. These are read-only so are safe. Because we go against the live API, network issues may cause intermittent test failures. We often cannot assert the exact number of objects the reports should return. The tests will however perform a basic sanity check.
 
 # Using the application
 

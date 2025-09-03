@@ -1,7 +1,7 @@
 .venv
 venv
 /secrets.txt
-/__pycache__
+__pycache__
 .env
 /.idea/aws.xml
 /.idea/misc.xml
