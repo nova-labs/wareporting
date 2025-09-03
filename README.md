@@ -1,7 +1,8 @@
 # wareporting
   
   This is a Flask Python app to pull pre-defined reports out of Wild Apricot using the API. It is intended for use
-  in situations where the built-in reports are not sufficient.
+  in situations where the built-in reports are not sufficient. Wild Apricot pagination has been added
+  for API calls that support `$top` and `$skip`, using a default page size of 500 records.
 
 # Installation
   
@@ -25,7 +26,15 @@ Install them with:
 ```shell
 pip-sync requirements.txt
 ```
-If you add or remove dependencies, please update `requirements.in` and run `pip-compile` to update `requirements.txt`.
+If you add or remove dependencies, please update `requirements.in` and run `pip-compile` to update `requirements.txt`, followed by pip-sync.
+
+For development, developer-only dependencies are listed in `requirements-dev.in`. Install them with:
+
+```shell
+pip-sync requirements-dev.txt
+```
+
+If you update the dependencies in `requirements-dev.in`, run: `pip-compile dev-requirements.in -c requirements.txt` (this constrains the development packages to obey `requirements.txt`). Then run `pip-sync requirements-dev.txt`.
 
 # Configuration
 
@@ -65,6 +74,14 @@ python wareporting.py
 ```
 
 which will automatically turn on debug mode and debug log statements. They are fairly verbose. This will also allow you to use `localhost` as the `WA_REPORTING_DOMAIN` and skip user OAuth.
+
+# Running tests
+
+The repository includes tests.
+
+- Run tests: `pytest -s`.
+
+Note: The test uses network access and valid Wild Apricot credentials. These are read-only so are safe. Because we go against the live API, network issues may cause intermittent test failures. We often cannot assert the exact number of objects the reports should return. The tests will however perform a basic sanity check.
 
 # Using the application
 
