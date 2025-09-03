@@ -1,7 +1,8 @@
 # wareporting
   
   This is a Flask Python app to pull pre-defined reports out of Wild Apricot using the API. It is intended for use
-  in situations where the built-in reports are not sufficient.
+  in situations where the built-in reports are not sufficient. Wild Apricot pagination has been added
+  for API calls that support `$top` and `$skip`, using a default page size of 500 records.
 
 # Installation
   

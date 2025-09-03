@@ -5,46 +5,100 @@ import json
 
 logger = logging.getLogger(__name__)
 
-def call_api(category, filter_string=None, select_string=None, event_id=None, asynchronous=False):
-    oauth_session = auth.get_oauth_session()
-    url = f"{auth.WA_API_PREFIX}/{category}"
+# Wild Apricot is moving to mandatory pagination for list endpoints.  The
+# exact size of each page depends on the endpoint but the documentation
+# suggests a maximum of 500 records per call.  Use that as a reasonable
+# default until a caller specifies otherwise.
+PAGE_SIZE = 500
 
-    params = []
+
+def call_api(
+    category,
+    filter_string=None,
+    select_string=None,
+    event_id=None,
+    asynchronous=False,
+):
+    """Call a Wild Apricot API endpoint and automatically page through results when filtering."""
+
+    oauth_session = auth.get_oauth_session()
+    base_url = f"{auth.WA_API_PREFIX}/{category}"
+
+    base_params = []
 
     if not asynchronous:
-        params.append(("$async", "false"))
+        base_params.append(("$async", "false"))
     if filter_string:
-        params.append(("$filter", filter_string))
+        base_params.append(("$filter", filter_string))
     if select_string:
-        params.append(("$select", select_string))
+        base_params.append(("$select", select_string))
     if event_id:
-        params.append(("eventId", str(event_id)))   
+        base_params.append(("eventId", str(event_id)))
 
-    logger.debug(f"API url will be: {url}")
-    logger.debug(f"API parameters will be: {params}")
-    
-    request = oauth_session.get(url = url, params = params)    
+    logger.debug(f"API url will be: {base_url}")
+    logger.debug(f"API parameters will be: {base_params}")
 
-    if request.status_code != 200:
+    def perform_request(params):
+        nonlocal oauth_session
+        request = oauth_session.get(url=base_url, params=params)
         if request.status_code == 401:
-            logger.debug("API call failed with 401, refreshing token and trying again")
+            logger.debug(
+                "API call failed with 401, refreshing token and trying again"
+            )
             auth.refresh_token()
             oauth_session = auth.get_oauth_session()
+            request = oauth_session.get(url=base_url, params=params)
         elif request.status_code == 429:
-            logger.debug("API call failed with 429, sleeping for 10 seconds and trying again")
+            logger.debug(
+                "API call failed with 429, sleeping for 10 seconds and trying again"
+            )
             sleep(10)
-        else:
-            raise Exception(f"API call failed with {request.status_code} {request.text}")
-        
-    # did we get it?
-    if request.status_code != 200:
-        logger.debug("Trying API call again.")
-        request = oauth_session.get(url = url, params = params)
+            request = oauth_session.get(url=base_url, params=params)
+        return request
 
-    if request.status_code != 200:
-        raise Exception(f"Repeated API call failed with {request.status_code} {request.text}")
-    
-    logger.debug(f"API call successful, returning data.")
+    if not filter_string:
+        request = perform_request(base_params)
+        if request.status_code != 200:
+            raise Exception(
+                f"API call failed with {request.status_code} {request.text}"
+            )
+        data = request.json()
+        logger.debug("API call successful (no pagination), returning data.")
+        logger.debug("*************************************")
+        logger.debug(f"{json.dumps(data, indent=4)}")
+        return data
+
+    skip = 0
+    accumulated = []
+
+    while True:
+        params = list(base_params)
+        params.append(("$top", str(PAGE_SIZE)))
+        params.append(("$skip", str(skip)))
+
+        request = perform_request(params)
+
+        if request.status_code != 200:
+            raise Exception(
+                f"API call failed with {request.status_code} {request.text}"
+            )
+
+        data = request.json()
+
+        if not isinstance(data, list):
+            logger.debug("API call successful (non-list), returning data.")
+            logger.debug("*************************************")
+            logger.debug(f"{json.dumps(data, indent=4)}")
+            return data
+
+        accumulated.extend(data)
+        logger.debug(f"Retrieved {len(data)} records (skip={skip}).")
+
+        if len(data) < PAGE_SIZE:
+            break
+        skip += PAGE_SIZE
+
+    logger.debug("API call successful, returning accumulated data.")
     logger.debug("*************************************")
-    logger.debug(f"{json.dumps(request.json(), indent=4)}")
-    return request.json()
+    logger.debug(f"{json.dumps(accumulated, indent=4)}")
+    return accumulated
