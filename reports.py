@@ -233,7 +233,7 @@ def get_slack_orphans(df):
     # ignore any users that are already deactivated
     df = df[df['status'] != 'Deactivated']
     # ignore any (Alumni) users (they are not freeloaders)
-    df = df[~df['fullname'].str.contains('(Alumni)', na=False)]
+    df = df[~df['fullname'].str.contains('(Alumni)', na=False, regex=False)]
     # find all rows where the email is *not* in the valid emails list
     df = df[~df['email'].isin(valid_emails)]
     logger.debug(f"Filtered df length: {df.shape[0]}")
