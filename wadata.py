@@ -5,11 +5,9 @@ import json
 
 logger = logging.getLogger(__name__)
 
-# Wild Apricot is moving to mandatory pagination for list endpoints.  The
-# exact size of each page depends on the endpoint but the documentation
-# suggests a maximum of 500 records per call.  Use that as a reasonable
-# default until a caller specifies otherwise.
-PAGE_SIZE = 500
+# Wild Apricot is moving to mandatory pagination for list endpoints.
+# Maximum size is 100.
+PAGE_SIZE = 100
 
 
 def call_api(
@@ -69,7 +67,9 @@ def call_api(
         return data
 
     skip = 0
-    accumulated = []
+    accumulated_list = []
+    accumulated_object = None
+    collection_key = None
 
     while True:
         params = list(base_params)
@@ -85,20 +85,64 @@ def call_api(
 
         data = request.json()
 
-        if not isinstance(data, list):
-            logger.debug("API call successful (non-list), returning data.")
-            logger.debug("*************************************")
-            logger.debug(f"{json.dumps(data, indent=4)}")
-            return data
+        # Handle endpoints that return a raw list (e.g., EventRegistrations)
+        if isinstance(data, list):
+            accumulated_list.extend(data)
+            logger.debug(f"Retrieved {len(data)} records (skip={skip}).")
+            if len(data) < PAGE_SIZE:
+                # Completed pagination for list response
+                logger.debug("API call successful, returning accumulated list data.")
+                logger.debug("*************************************")
+                logger.debug(f"{json.dumps(accumulated_list, indent=4)}")
+                return accumulated_list
+            skip += PAGE_SIZE
+            continue
 
-        accumulated.extend(data)
-        logger.debug(f"Retrieved {len(data)} records (skip={skip}).")
+        # Handle endpoints that return an object containing the collection (e.g., {'Contacts': [...], 'Count': N})
+        if isinstance(data, dict):
+            if collection_key is None:
+                # Detect the collection key on the first page: the first key whose value is a list
+                list_keys = [k for k, v in data.items() if isinstance(v, list)]
+                if len(list_keys) == 1:
+                    collection_key = list_keys[0]
+                    accumulated_object = dict(data)
+                    accumulated_object[collection_key] = []
+                    logger.debug(f"Detected collection key for pagination: {collection_key}")
+                else:
+                    # Not a paginated collection response; just return the object
+                    logger.debug("API call successful (non-collection object), returning data.")
+                    logger.debug("*************************************")
+                    logger.debug(f"{json.dumps(data, indent=4)}")
+                    return data
 
-        if len(data) < PAGE_SIZE:
-            break
-        skip += PAGE_SIZE
+            page_items = data.get(collection_key, [])
+            accumulated_object[collection_key].extend(page_items)
+            logger.debug(
+                f"Retrieved {len(page_items)} records for '{collection_key}' (skip={skip})."
+            )
 
-    logger.debug("API call successful, returning accumulated data.")
-    logger.debug("*************************************")
-    logger.debug(f"{json.dumps(accumulated, indent=4)}")
-    return accumulated
+            if len(page_items) < PAGE_SIZE:
+                # Completed pagination for object-with-collection response
+                # If a count field exists, align it with accumulated length
+                if 'Count' in accumulated_object and isinstance(accumulated_object['Count'], int):
+                    accumulated_object['Count'] = len(accumulated_object[collection_key])
+                logger.debug("API call successful, returning accumulated object data.")
+                logger.debug("*************************************")
+                logger.debug(f"{json.dumps(accumulated_object, indent=4)}")
+                return accumulated_object
+
+            skip += PAGE_SIZE
+            continue
+
+        # Fallback: unknown response type; return as-is
+        logger.debug("API call successful (unknown type), returning data.")
+        logger.debug("*************************************")
+        logger.debug(f"{json.dumps(data, indent=4)}")
+        return data
+
+    # We should never reach here because returns happen inside the loop
+    # but keep a defensive return in case of logic changes.
+    logger.debug("API pagination loop ended unexpectedly; returning best-effort data.")
+    if accumulated_object is not None:
+        return accumulated_object
+    return accumulated_list
