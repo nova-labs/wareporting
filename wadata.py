@@ -85,6 +85,12 @@ def call_api(
                 if isinstance(value, list):
                     list_key = key
                     break
+            if list_key is None:
+                # No list found; return the original response without pagination
+                logger.debug(
+                    "Response contained no list; returning raw JSON without pagination"
+                )
+                return data
 
         if list_key is not None and isinstance(data, dict):
             page_items = data.get(list_key, [])
