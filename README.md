@@ -6,7 +6,7 @@
 
 # Installation
   
-The application has been developed under Python 3.10.10. It is recommended that you use a virtual environment to install and run the application. (Either `.venv` or `venv` will be ignored by git.) The directions below are for bash but similar ones with slightly different commands will work on Windows as well.
+The application has been developed under Python 3.10.12. It is recommended that you use a virtual environment to install and run the application. (Either `.venv` or `venv` will be ignored by git.) The directions below are for bash but similar ones with slightly different commands will work on Windows as well.
 
 ```shell
 python -m venv .venv
